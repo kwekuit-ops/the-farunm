@@ -133,6 +133,21 @@ header {
 .header-center { flex: 0 1 732px; display: flex; gap: 0.5rem; }
 .header-right { display: flex; gap: 1rem; align-items: center; }
 
+.header-logo {
+    font-family: 'Syne', sans-serif; 
+    font-size: 1.5rem; 
+    font-weight: 800; 
+    letter-spacing: -0.05em; 
+    font-style: normal; 
+    margin: 0;
+}
+.header-logo span {
+    font-weight: 400; 
+    font-size: 0.7rem; 
+    color: var(--text-secondary); 
+    vertical-align: top;
+}
+
 .search-bar {
     display: flex;
     flex: 1;
@@ -720,6 +735,13 @@ video {
     
     .admin-layout { grid-template-columns: 1fr; }
     .video-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+    header { padding: 0.8rem 1rem; }
+    .header-left { gap: 0.8rem; }
+    .header-logo { font-size: 1.1rem; }
+    .header-logo span { display: none; } /* Hide "SYSTEMS" to save crucial space on phones */
 }
 
 .video-grid {

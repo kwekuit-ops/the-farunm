@@ -22,24 +22,26 @@ if (urlParams.get('admin') === 'true' || localStorage.getItem('is_admin') === 't
     });
 }
 
-    // Sidebar Toggle Logic
-    const menuToggleBtn = document.getElementById('menu-toggle-btn');
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main-content');
-    
-    if (menuToggleBtn && sidebar) {
-        menuToggleBtn.addEventListener('click', (e) => {
+    // Sidebar Toggle Logic with Event Delegation (fixes Lucide DOM replacement disconnect)
+    document.addEventListener('click', (e) => {
+        const toggleBtn = e.target.closest('#menu-toggle-btn');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (toggleBtn && sidebar) {
             e.stopPropagation();
             sidebar.classList.toggle('open');
-        });
-        
-        if (mainContent) {
-            mainContent.addEventListener('click', () => {
-                if(sidebar.classList.contains('open')) {
-                    sidebar.classList.remove('open');
-                }
-            });
         }
+    });
+    
+    // Main content click-to-close logic
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.addEventListener('click', () => {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar && sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        });
     }
 
 let supabaseClient = null;
