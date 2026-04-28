@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inter:wght@300;400;500&display=swap');
 
+* {
+    box-sizing: border-box;
+}
+
 :root {
     --bg-color: #06060a; 
     --card-bg: #0c0c14;
@@ -10,6 +14,11 @@
     --border-color: rgba(0, 255, 204, 0.1);
     --hover-bg: rgba(0, 255, 204, 0.05);
     --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body, html {
+    overflow-x: hidden;
+    max-width: 100vw;
 }
 
 body {
