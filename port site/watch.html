@@ -12,7 +12,7 @@
 <body>
     <header>
         <div class="header-left">
-            <i data-lucide="menu" style="cursor: pointer;"></i>
+            <i data-lucide="menu" id="menu-toggle-btn" style="cursor: pointer;"></i>
                 <h1 style="font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.05em; font-style: normal; margin: 0;">THE FARNUM <span style="font-weight: 400; font-size: 0.7rem; color: var(--text-secondary); vertical-align: top;">SYSTEMS</span></h1>
         </div>
         <div class="header-center">
@@ -26,9 +26,7 @@
         <div class="header-right">
             <i data-lucide="video" style="cursor: pointer;"></i>
             <i data-lucide="bell" style="cursor: pointer;" class="desktop-only"></i>
-            <button id="header-login-btn" class="btn btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--accent-color); color: var(--accent-color);">
-                CREATE ACCOUNT
-            </button>
+
             <div id="user-profile" style="display: none; align-items: center; gap: 0.8rem; cursor: pointer;">
                 <span id="user-name" style="font-size: 0.8rem; font-weight: 500;" class="desktop-only"></span>
                 <div id="user-avatar" class="channel-avatar" style="width: 32px; height: 32px; border: 1px solid var(--accent-color);"></div>

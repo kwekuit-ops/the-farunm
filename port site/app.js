@@ -3,8 +3,8 @@
  */
 
 // --- CONFIGURATION ---
-let SUPABASE_URL = localStorage.getItem('sb_url') || '';
-let SUPABASE_ANON_KEY = localStorage.getItem('sb_key') || '';
+let SUPABASE_URL = localStorage.getItem('sb_url') || 'https://pgicgdnqmvrdjbhsjmms.supabase.co';
+let SUPABASE_ANON_KEY = localStorage.getItem('sb_key') || 'sb_publishable_yle17i6a3oZdWL8eDlIlAA_6I6PWTEJ';
 let TELEGRAM_GROUP_LINK = localStorage.getItem('tg_link') || '';
 let GAMING_LINK = localStorage.getItem('gaming_link') || '';
 let PAYSTACK_KEY = localStorage.getItem('paystack_key') || 'pk_live_4a40bfb9b3e57c0919bef6958579ae74829ce7be';
@@ -21,6 +21,26 @@ if (urlParams.get('admin') === 'true' || localStorage.getItem('is_admin') === 't
         if (adminLink) adminLink.style.display = 'flex';
     });
 }
+
+    // Sidebar Toggle Logic
+    const menuToggleBtn = document.getElementById('menu-toggle-btn');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    
+    if (menuToggleBtn && sidebar) {
+        menuToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sidebar.classList.toggle('open');
+        });
+        
+        if (mainContent) {
+            mainContent.addEventListener('click', () => {
+                if(sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                }
+            });
+        }
+    }
 
 let supabaseClient = null;
 
@@ -379,8 +399,24 @@ document.addEventListener('DOMContentLoaded', () => {
         function stageFile(file) {
             if (!file.type.startsWith('video/')) { alert('Please select a valid video file.'); return; }
             stagedFile = file;
-            statusText.textContent = `✓ SELECTED: ${file.name}`;
-            uploadActionContainer.style.display = 'block';
+            
+            // Visually update the dropzone
+            const p = dropZone.querySelector('p');
+            const icon = dropZone.querySelector('i');
+            if (p) {
+                p.textContent = `${file.name}`;
+                p.style.color = '#4ade80';
+                p.style.fontWeight = '700';
+            }
+            if (icon) {
+                icon.setAttribute('data-lucide', 'check-circle');
+                icon.style.color = '#4ade80';
+                lucide.createIcons();
+            }
+            
+            if (statusText) statusText.textContent = `✓ SELECTED: ${file.name}`;
+            if (uploadActionContainer) uploadActionContainer.style.display = 'block';
+            finalUploadBtn.innerText = 'PUBLISH TO THE FARNUM';
         }
 
         finalUploadBtn.addEventListener('click', async () => {
@@ -398,7 +434,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const priceVal = priceInput && priceInput.value ? parseFloat(priceInput.value) : 0;
             
             finalUploadBtn.disabled = true;
-            statusText.textContent = 'UPLOADING TO THE CLOUD (DO NOT CLOSE)...';
+            finalUploadBtn.innerText = 'UPLOADING... DO NOT CLOSE!';
+            if (statusText) statusText.textContent = 'UPLOADING TO THE CLOUD (DO NOT CLOSE)...';
             const id = generateID();
 
             try {
@@ -409,13 +446,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 titleInput.value = '';
                 descInput.value = '';
                 stagedFile = null;
-                uploadActionContainer.style.display = 'none';
-                statusText.textContent = '';
+                
+                const p = dropZone.querySelector('p');
+                const icon = dropZone.querySelector('i');
+                if (p) { p.textContent = 'DRAG & DROP MODULE'; p.style.color = ''; p.style.fontWeight = ''; }
+                if (icon) { icon.setAttribute('data-lucide', 'upload-cloud'); icon.style.color = ''; lucide.createIcons(); }
+                
+                if (uploadActionContainer) uploadActionContainer.style.display = 'none';
+                if (statusText) statusText.textContent = '';
             } catch (err) {
                 console.error(err);
                 alert('Error uploading. Make sure your bucket is public and table is created.');
             } finally {
                 finalUploadBtn.disabled = false;
+                finalUploadBtn.innerText = 'PUBLISH TO THE FARNUM';
             }
         }
 
