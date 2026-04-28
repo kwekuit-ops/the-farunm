@@ -674,7 +674,7 @@ async function renderHistory(filter = '') {
         return;
     }
 
-    list.innerHTML = `<div class="video-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem 1rem;">${videos.map((v, index) => {
+    list.innerHTML = `<div class="video-grid">${videos.map((v, index) => {
         const link = getShareLink(v.id);
         const delay = index * 0.05;
         return `

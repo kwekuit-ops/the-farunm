@@ -707,6 +707,21 @@ video {
     .drop-zone { height: 250px; }
     .video-card { flex-direction: column; text-align: center; gap: 1rem; }
     .video-actions { width: 100%; justify-content: center; }
+    .header-center { display: none; } /* Hide search bar to avoid header squeeze */
+    
+    .admin-layout { grid-template-columns: 1fr; }
+    .video-grid { grid-template-columns: 1fr; }
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.admin-layout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
 }
 
 .filter-chip {

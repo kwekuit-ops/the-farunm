@@ -88,7 +88,7 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 400px; gap: 3rem; align-items: start;">
+                <div class="admin-layout" style="gap: 3rem; align-items: start;">
                     <div class="tools-side">
                         <h3 style="font-size: 1rem; margin-bottom: 1.5rem; letter-spacing: 0.1em;">CONTENT PUBLISHING</h3>
                         <section class="upload-section" style="background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
@@ -153,7 +153,7 @@
                         <h3 style="font-size: 0.75rem; letter-spacing: 0.2em; color: var(--text-secondary);">TRUSTED BY ELITE PLAYERS</h3>
                         <div style="height: 1px; flex: 1; background: var(--border-color);"></div>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                    <div id="video-grid" class="video-grid" style="width: 100%;">
                         <!-- Review 1 -->
                         <div style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
                             <div style="display: flex; gap: 0.5rem; color: #fbbf24; margin-bottom: 0.8rem; font-size: 0.8rem;">
@@ -235,7 +235,7 @@
             <!-- History Section -->
             <div id="history-section" style="display: none; animation: entrance 0.6s ease-out;">
                 <h2 style="margin-bottom: 2rem; color: var(--accent-color); letter-spacing: 0.1em;">WATCH HISTORY</h2>
-                <div id="history-list" class="video-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;"></div>
+                <div id="history-list" class="video-grid"></div>
             </div>
         </main>
     </div>
