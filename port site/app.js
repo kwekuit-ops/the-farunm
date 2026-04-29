@@ -305,23 +305,65 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('history-section').style.display = 'block';
             renderLocalHistory();
         } else if (sectionName === 'admin-dashboard') {
-            if (!IS_ADMIN) return; // Hard stop for non-admins
+            if (!IS_ADMIN) return;
             document.getElementById('admin-dashboard').style.display = 'block';
             refreshAdminStats();
+            startLiveActiveSessions();
+            // Refresh stats every 30 seconds automatically
+            if (_statsInterval) clearInterval(_statsInterval);
+            _statsInterval = setInterval(refreshAdminStats, 30000);
         }
     };
+
+    let _statsInterval = null;
+    let _presenceChannel = null;
 
     const refreshAdminStats = async () => {
         if (!supabaseClient) return;
-        const { data, count, error } = await supabaseClient
+
+        // --- Stat 1: Total Broadcasts (video count) ---
+        const { count: videoCount } = await supabaseClient
             .from('videos')
             .select('*', { count: 'exact', head: true });
+        const statVideoEl = document.getElementById('stat-total-videos');
+        if (statVideoEl) statVideoEl.textContent = videoCount || 0;
 
-        if (!error) {
-            const statVideoEl = document.getElementById('stat-total-videos');
-            if (statVideoEl) statVideoEl.textContent = count || 0;
+        // --- Stat 2: Total Traffic (sum of all views) ---
+        const { data: viewsData } = await supabaseClient
+            .from('videos')
+            .select('views');
+        if (viewsData) {
+            const totalViews = viewsData.reduce((sum, v) => sum + (v.views || 0), 0);
+            const statViewsEl = document.getElementById('stat-total-views');
+            if (statViewsEl) {
+                statViewsEl.textContent = totalViews >= 1000
+                    ? (totalViews / 1000).toFixed(1) + 'K'
+                    : totalViews;
+            }
         }
     };
+
+    const startLiveActiveSessions = () => {
+        if (!supabaseClient || _presenceChannel) return;
+
+        _presenceChannel = supabaseClient.channel('active-admins', {
+            config: { presence: { key: 'admin-' + Math.random().toString(36).slice(2) } }
+        });
+
+        _presenceChannel
+            .on('presence', { event: 'sync' }, () => {
+                const state = _presenceChannel.presenceState();
+                const count = Object.keys(state).length;
+                const el = document.getElementById('stat-active-sessions');
+                if (el) el.textContent = count;
+            })
+            .subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await _presenceChannel.track({ online_at: new Date().toISOString() });
+                }
+            });
+    };
+
 
     const renderLeaderboard = () => {
         const body = document.getElementById('leaderboard-body');
@@ -610,6 +652,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         };
                     } else {
                         videoElem.src = data.video_url;
+                    }
+
+                    // --- Increment view count in real-time ---
+                    if (supabaseClient) {
+                        supabaseClient.rpc('increment_views', { video_id: data.id })
+                            .then(({ error }) => {
+                                if (error) {
+                                    // Fallback: direct update if RPC not set up
+                                    supabaseClient
+                                        .from('videos')
+                                        .update({ views: (data.views || 0) + 1 })
+                                        .eq('id', data.id);
+                                }
+                            });
                     }
                 } else {
                     document.getElementById('video-title').textContent = 'Video Not Found';
