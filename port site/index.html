@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,11 +11,13 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body>
     <header>
         <div class="header-left">
             <i data-lucide="menu" id="menu-toggle-btn" style="cursor: pointer;"></i>
-            <a href="index.html" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem; color: #fff;">
+            <a href="index.html"
+                style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem; color: #fff;">
                 <h1 class="header-logo">THE FARNUM <span>SYSTEMS</span></h1>
             </a>
         </div>
@@ -25,7 +28,8 @@
             <button class="search-btn">
                 <i data-lucide="search" style="width: 18px;"></i>
             </button>
-            <div style="background: #181818; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: 0.5rem; cursor: pointer;">
+            <div
+                style="background: #181818; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: 0.5rem; cursor: pointer;">
                 <i data-lucide="mic" style="width: 18px;"></i>
             </div>
         </div>
@@ -35,7 +39,8 @@
 
             <div id="user-profile" style="display: none; align-items: center; gap: 0.8rem; cursor: pointer;">
                 <span id="user-name" style="font-size: 0.8rem; font-weight: 500;" class="desktop-only"></span>
-                <div id="user-avatar" class="channel-avatar" style="width: 32px; height: 32px; border: 1px solid var(--accent-color);"></div>
+                <div id="user-avatar" class="channel-avatar"
+                    style="width: 32px; height: 32px; border: 1px solid var(--accent-color);"></div>
             </div>
         </div>
     </header>
@@ -44,91 +49,142 @@
         <aside class="sidebar">
             <a href="index.html" class="nav-item active"><i data-lucide="home"></i> Home</a>
             <a href="#" class="nav-item" onclick="showSection('history')"><i data-lucide="history"></i> History</a>
-            <a href="#" class="nav-item" onclick="showSection('leaderboard')"><i data-lucide="trophy"></i> Leaderboard</a>
-            <a href="#" id="sidebar-admin-link" class="nav-item" style="display: none;" onclick="showSection('admin-dashboard')"><i data-lucide="settings"></i> Admin Console</a>
+            <a href="#" class="nav-item" onclick="showSection('leaderboard')"><i data-lucide="trophy"></i>
+                Leaderboard</a>
+            <a href="#" id="sidebar-admin-link" class="nav-item" style="display: none;"
+                onclick="showSection('admin-dashboard')"><i data-lucide="settings"></i> Admin Console</a>
             <hr style="border: none; border-top: 1px solid #333; margin: 0.8rem 0;">
-            <div style="padding: 0.5rem 0.8rem; font-size: 0.8rem; font-weight: 700; color: var(--accent-color); letter-spacing: 0.1em;">ACHIEVEMENTS</div>
+            <div
+                style="padding: 0.5rem 0.8rem; font-size: 0.8rem; font-weight: 700; color: var(--accent-color); letter-spacing: 0.1em;">
+                ACHIEVEMENTS</div>
             <div id="badge-container" style="padding: 0.5rem 0.8rem; display: flex; flex-wrap: wrap; gap: 0.5rem;">
                 <!-- Badges will appear here -->
-                <div title="Novice" style="width: 30px; height: 30px; background: #272727; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #444;"><i data-lucide="award" style="width: 14px; color: #555;"></i></div>
+                <div title="Novice"
+                    style="width: 30px; height: 30px; background: #272727; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #444;">
+                    <i data-lucide="award" style="width: 14px; color: #555;"></i></div>
             </div>
             <hr style="border: none; border-top: 1px solid #333; margin: 0.8rem 0;">
             <div style="padding: 0.5rem 0.8rem; font-size: 0.9rem; font-weight: 500;">Subscriptions</div>
-            <a href="#" class="nav-item"><div class="channel-avatar" style="width: 24px; height: 24px;"></div> Player 1</a>
+            <a href="#" class="nav-item">
+                <div class="channel-avatar" style="width: 24px; height: 24px;"></div> Player 1
+            </a>
         </aside>
 
         <main class="main-content">
-            <!-- Hero banner within main content -->
-            <div style="width: 100%; border-radius: 16px; height: 180px; background: linear-gradient(135deg, rgba(13, 13, 20, 0.8), rgba(26, 26, 46, 0.8)); margin-bottom: 2rem; display: flex; align-items: center; padding: 3rem; overflow: hidden; position: relative; border: 1px solid rgba(255, 255, 255, 0.05);">
-                <div style="z-index: 2;">
-                    <p style="color: var(--text-primary); max-width: 500px; font-size: 1.2rem; font-weight: 500; letter-spacing: 0.02em;">The leading platform to learn how to play any casino game.</p>
+            <!-- Casino Banner Animation -->
+            <div class="casino-banner">
+                <div class="shimmer"></div>
+                
+                <div class="text-content">
+                    <h1>The leading <br><span class="highlight">platform</span></h1>
+                    <p>to play any casino game.</p>
                 </div>
-                <div style="position: absolute; right: -50px; top: -50px; width: 250px; height: 250px; background: var(--accent-color); opacity: 0.05; filter: blur(60px);"></div>
+
+                <div class="roulette-container">
+                    <div class="wheel"></div>
+                </div>
             </div>
 
 
             <!-- Admin Intelligence Dashboard -->
             <div id="admin-dashboard" style="display: none; animation: entrance 0.6s ease-out;">
-                <h2 style="margin-bottom: 2rem; color: var(--accent-color); letter-spacing: 0.1em;">ADMIN INTELLIGENCE</h2>
-                
+                <h2 style="margin-bottom: 2rem; color: var(--accent-color); letter-spacing: 0.1em;">ADMIN INTELLIGENCE
+                </h2>
+
                 <!-- Analytics Row -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
-                    <div style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <div style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.2em; margin-bottom: 1rem;">TOTAL BROADCASTS</div>
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+                    <div
+                        style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <div
+                            style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.2em; margin-bottom: 1rem;">
+                            TOTAL BROADCASTS</div>
                         <div id="stat-total-videos" style="font-size: 2rem; font-weight: 800; color: #fff;">0</div>
                     </div>
-                    <div style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <div style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.2em; margin-bottom: 1rem;">TOTAL TRAFFIC (VIEWS)</div>
-                        <div id="stat-total-views" style="font-size: 2rem; font-weight: 800; color: var(--accent-color);">4.2K</div>
+                    <div
+                        style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <div
+                            style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.2em; margin-bottom: 1rem;">
+                            TOTAL TRAFFIC (VIEWS)</div>
+                        <div id="stat-total-views"
+                            style="font-size: 2rem; font-weight: 800; color: var(--accent-color);">4.2K</div>
                     </div>
-                    <div style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <div style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.2em; margin-bottom: 1rem;">ACTIVE SESSIONS</div>
+                    <div
+                        style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <div
+                            style="font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.2em; margin-bottom: 1rem;">
+                            ACTIVE SESSIONS</div>
                         <div style="font-size: 2rem; font-weight: 800; color: #4ade80;">12</div>
                     </div>
                 </div>
 
                 <div class="admin-layout" style="gap: 3rem; align-items: start;">
                     <div class="tools-side">
-                        <h3 style="font-size: 1rem; margin-bottom: 1.5rem; letter-spacing: 0.1em;">CONTENT PUBLISHING</h3>
-                        <section class="upload-section" style="background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <h3 style="font-size: 1rem; margin-bottom: 1.5rem; letter-spacing: 0.1em;">CONTENT PUBLISHING
+                        </h3>
+                        <section class="upload-section"
+                            style="background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
                             <div class="drop-zone" id="drop-zone" style="height: 180px;">
                                 <i data-lucide="upload-cloud"></i>
                                 <p>DRAG & DROP MODULE</p>
                                 <input type="file" id="file-input" accept="video/mp4,video/quicktime,video/webm">
                             </div>
-                            <div id="status-text" style="color: var(--accent-color); font-size: 0.9rem; font-weight: 700; margin-top: 1rem; text-align: center; min-height: 20px;"></div>
-                            <input type="text" id="video-title-input" placeholder="MODULE TITLE" class="premium-input" style="margin-top: 1rem;">
-                            <input type="text" id="video-play-link" placeholder="PLAY LINK (Optional)" class="premium-input" style="margin-top: 0.5rem;">
-                            <input type="number" id="video-price-input" placeholder="PRICE ($) - Leave blank for Free" class="premium-input" style="margin-top: 0.5rem;" min="0" step="0.01">
-                            <textarea id="video-desc-input" placeholder="STRATEGY SUMMARY" class="premium-input" rows="3" style="margin-top: 0.5rem;"></textarea>
-                            <button id="final-upload-btn" class="btn btn-primary" style="margin-top: 1.5rem; width: 100%; height: 50px;">PUBLISH TO THE FARNUM</button>
+                            <div id="status-text"
+                                style="color: var(--accent-color); font-size: 0.9rem; font-weight: 700; margin-top: 1rem; text-align: center; min-height: 20px;">
+                            </div>
+                            <input type="text" id="video-title-input" placeholder="MODULE TITLE" class="premium-input"
+                                style="margin-top: 1rem;">
+                            <input type="text" id="video-play-link" placeholder="PLAY LINK (Optional)"
+                                class="premium-input" style="margin-top: 0.5rem;">
+                            <input type="number" id="video-price-input" placeholder="PRICE ($) - Leave blank for Free"
+                                class="premium-input" style="margin-top: 0.5rem;" min="0" step="0.01">
+                            <textarea id="video-desc-input" placeholder="STRATEGY SUMMARY" class="premium-input"
+                                rows="3" style="margin-top: 0.5rem;"></textarea>
+                            <button id="final-upload-btn" class="btn btn-primary"
+                                style="margin-top: 1.5rem; width: 100%; height: 50px;">PUBLISH TO THE FARNUM</button>
                         </section>
                     </div>
 
                     <div class="config-side">
                         <h3 style="font-size: 1rem; margin-bottom: 1.5rem; letter-spacing: 0.1em;">SYSTEM LINKS</h3>
-                        <div style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 1rem;">
+                        <div
+                            style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 1rem;">
                             <div>
-                                <label style="font-size: 0.6rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">TELEGRAM COMMUNITY</label>
-                                <input type="text" id="tg-config-input" placeholder="https://t.me/..." class="premium-input">
+                                <label
+                                    style="font-size: 0.6rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">TELEGRAM
+                                    COMMUNITY</label>
+                                <input type="text" id="tg-config-input" placeholder="https://t.me/..."
+                                    class="premium-input">
                             </div>
                             <div>
-                                <label style="font-size: 0.6rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">GAMING ACCOUNT SYSTEM</label>
-                                <input type="text" id="gaming-link-input" placeholder="https://..." class="premium-input">
+                                <label
+                                    style="font-size: 0.6rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">GAMING
+                                    ACCOUNT SYSTEM</label>
+                                <input type="text" id="gaming-link-input" placeholder="https://..."
+                                    class="premium-input">
                             </div>
                             <div>
-                                <label style="font-size: 0.6rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">SUPABASE ENDPOINT</label>
+                                <label
+                                    style="font-size: 0.6rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">SUPABASE
+                                    ENDPOINT</label>
                                 <input type="text" id="sb-url-input" placeholder="API URL" class="premium-input">
                             </div>
                             <div>
-                                <label style="font-size: 0.6rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">SUPABASE ACCESS KEY</label>
-                                <input type="password" id="sb-key-input" placeholder="SERVICE ROLE" class="premium-input">
+                                <label
+                                    style="font-size: 0.6rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">SUPABASE
+                                    ACCESS KEY</label>
+                                <input type="password" id="sb-key-input" placeholder="SERVICE ROLE"
+                                    class="premium-input">
                             </div>
                             <div>
-                                <label style="font-size: 0.6rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">PAYSTACK PUBLIC KEY</label>
-                                <input type="password" id="paystack-key-input" placeholder="pk_live_... or pk_test_..." class="premium-input">
+                                <label
+                                    style="font-size: 0.6rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">PAYSTACK
+                                    PUBLIC KEY</label>
+                                <input type="password" id="paystack-key-input" placeholder="pk_live_... or pk_test_..."
+                                    class="premium-input">
                             </div>
-                            <button id="save-config-btn" class="btn btn-secondary" style="margin-top: 1rem; width: 100%;">SAVE ENVIRONMENT</button>
+                            <button id="save-config-btn" class="btn btn-secondary"
+                                style="margin-top: 1rem; width: 100%;">SAVE ENVIRONMENT</button>
                         </div>
                     </div>
                 </div>
@@ -144,27 +200,34 @@
                     </div>
                     <div id="video-list"></div>
                 </div>
-                
+
                 <!-- Trust / Reviews Section -->
                 <div id="reviews-section" style="margin-top: 4rem; margin-bottom: 2rem;">
                     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
                         <div style="height: 1px; flex: 1; background: var(--border-color);"></div>
-                        <h3 style="font-size: 0.75rem; letter-spacing: 0.2em; color: var(--text-secondary);">TRUSTED BY ELITE PLAYERS</h3>
+                        <h3 style="font-size: 0.75rem; letter-spacing: 0.2em; color: var(--text-secondary);">TRUSTED BY
+                            ELITE PLAYERS</h3>
                         <div style="height: 1px; flex: 1; background: var(--border-color);"></div>
                     </div>
                     <div id="video-grid" class="video-grid" style="width: 100%;">
                         <!-- Review 1 -->
-                        <div style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                            <div style="display: flex; gap: 0.5rem; color: #fbbf24; margin-bottom: 0.8rem; font-size: 0.8rem;">
+                        <div
+                            style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <div
+                                style="display: flex; gap: 0.5rem; color: #fbbf24; margin-bottom: 0.8rem; font-size: 0.8rem;">
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                             </div>
-                            <p style="font-size: 0.85rem; color: var(--text-primary); line-height: 1.6; font-style: italic; margin-bottom: 1.2rem;">"The Mines strategy modules are a game changer. I've doubled my success rate in just 3 days."</p>
+                            <p
+                                style="font-size: 0.85rem; color: var(--text-primary); line-height: 1.6; font-style: italic; margin-bottom: 1.2rem;">
+                                "The Mines strategy modules are a game changer. I've doubled my success rate in just 3
+                                days."</p>
                             <div style="display: flex; align-items: center; gap: 0.8rem;">
-                                <div class="channel-avatar" style="width: 32px; height: 32px; background: #272727;"></div>
+                                <div class="channel-avatar" style="width: 32px; height: 32px; background: #272727;">
+                                </div>
                                 <div>
                                     <div style="font-size: 0.8rem; font-weight: 700;">JORDAN X.</div>
                                     <div style="font-size: 0.7rem; color: var(--accent-color);">VERIFIED MEMBER</div>
@@ -172,17 +235,23 @@
                             </div>
                         </div>
                         <!-- Review 2 -->
-                        <div style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                            <div style="display: flex; gap: 0.5rem; color: #fbbf24; margin-bottom: 0.8rem; font-size: 0.8rem;">
+                        <div
+                            style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <div
+                                style="display: flex; gap: 0.5rem; color: #fbbf24; margin-bottom: 0.8rem; font-size: 0.8rem;">
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                             </div>
-                            <p style="font-size: 0.85rem; color: var(--text-primary); line-height: 1.6; font-style: italic; margin-bottom: 1.2rem;">"Finally a platform that treats casino gaming like a science. The analytics are top notch!"</p>
+                            <p
+                                style="font-size: 0.85rem; color: var(--text-primary); line-height: 1.6; font-style: italic; margin-bottom: 1.2rem;">
+                                "Finally a platform that treats casino gaming like a science. The analytics are top
+                                notch!"</p>
                             <div style="display: flex; align-items: center; gap: 0.8rem;">
-                                <div class="channel-avatar" style="width: 32px; height: 32px; background: #272727;"></div>
+                                <div class="channel-avatar" style="width: 32px; height: 32px; background: #272727;">
+                                </div>
                                 <div>
                                     <div style="font-size: 0.8rem; font-weight: 700;">SARAH L.</div>
                                     <div style="font-size: 0.7rem; color: var(--accent-color);">PRO PLAYER</div>
@@ -190,17 +259,23 @@
                             </div>
                         </div>
                         <!-- Review 3 -->
-                        <div style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                            <div style="display: flex; gap: 0.5rem; color: #fbbf24; margin-bottom: 0.8rem; font-size: 0.8rem;">
+                        <div
+                            style="background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <div
+                                style="display: flex; gap: 0.5rem; color: #fbbf24; margin-bottom: 0.8rem; font-size: 0.8rem;">
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                                 <i data-lucide="star" style="width: 14px; fill: #fbbf24;"></i>
                             </div>
-                            <p style="font-size: 0.85rem; color: var(--text-primary); line-height: 1.6; font-style: italic; margin-bottom: 1.2rem;">"The Farnum is the only place I trust for high-frequency strategy. 10/10 recommendation."</p>
+                            <p
+                                style="font-size: 0.85rem; color: var(--text-primary); line-height: 1.6; font-style: italic; margin-bottom: 1.2rem;">
+                                "The Farnum is the only place I trust for high-frequency strategy. 10/10
+                                recommendation."</p>
                             <div style="display: flex; align-items: center; gap: 0.8rem;">
-                                <div class="channel-avatar" style="width: 32px; height: 32px; background: #272727;"></div>
+                                <div class="channel-avatar" style="width: 32px; height: 32px; background: #272727;">
+                                </div>
                                 <div>
                                     <div style="font-size: 0.8rem; font-weight: 700;">MIKE T.</div>
                                     <div style="font-size: 0.7rem; color: var(--accent-color);">CASINO COACH</div>
@@ -213,8 +288,10 @@
 
             <!-- Leaderboard Section -->
             <div id="leaderboard-section" style="display: none; animation: entrance 0.6s ease-out;">
-                <h2 style="margin-bottom: 2rem; color: var(--accent-color); letter-spacing: 0.1em;">TOP EARNERS LEADERBOARD</h2>
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+                <h2 style="margin-bottom: 2rem; color: var(--accent-color); letter-spacing: 0.1em;">TOP EARNERS
+                    LEADERBOARD</h2>
+                <div
+                    style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
                     <table style="width: 100%; border-collapse: collapse; text-align: left;">
                         <thead style="background: rgba(0,255,204,0.05);">
                             <tr>
@@ -243,10 +320,11 @@
     <!-- Upload Success Overlay -->
     <div class="overlay" id="overlay">
         <div class="result-card">
-            <i data-lucide="check-circle" style="color: var(--accent-color); width: 64px; height: 64px; margin-bottom: 1rem;"></i>
+            <i data-lucide="check-circle"
+                style="color: var(--accent-color); width: 64px; height: 64px; margin-bottom: 1rem;"></i>
             <h2 class="editorial">Upload Complete</h2>
             <p style="color: var(--text-secondary);">Your video is ready to share with the world.</p>
-            
+
             <div class="share-url">
                 <span id="generated-link">https://gravity.io/watch?id=123</span>
                 <button class="btn btn-secondary" id="copy-btn" style="padding: 0.5rem 1rem;">
@@ -275,7 +353,8 @@
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 <input type="hidden" id="edit-id">
                 <div>
-                    <label class="editorial" style="font-size: 0.7rem; color: var(--accent-color);">Broadast Title</label>
+                    <label class="editorial" style="font-size: 0.7rem; color: var(--accent-color);">Broadast
+                        Title</label>
                     <input type="text" id="edit-title" class="premium-input">
                 </div>
                 <div>
@@ -284,7 +363,8 @@
                 </div>
                 <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                     <button class="btn btn-primary" id="save-edit-btn">SAVE CHANGES</button>
-                    <button class="btn btn-secondary" onclick="document.getElementById('edit-overlay').style.display='none'">CANCEL</button>
+                    <button class="btn btn-secondary"
+                        onclick="document.getElementById('edit-overlay').style.display='none'">CANCEL</button>
                 </div>
             </div>
         </div>
@@ -295,4 +375,5 @@
         lucide.createIcons();
     </script>
 </body>
+
 </html>

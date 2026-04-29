@@ -58,18 +58,49 @@ function initSupabase() {
 initSupabase();
 
 // --- CLOUD CORE ---
-async function uploadToCloud(id, file, title, description, play_link, price) {
+async function uploadToCloud(id, file, title, description, play_link, price, onProgress) {
     if (!supabaseClient) {
         alert('Please configure your Supabase URL and Key first!');
         throw new Error('Supabase not configured');
     }
 
     const cleanFileName = `${id}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-    const { data: uploadData, error: uploadError } = await supabaseClient.storage
-        .from('videos')
-        .upload(cleanFileName, file);
+    
+    // Use XMLHttpRequest directly to track upload progress
+    await new Promise(async (resolve, reject) => {
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const token = session ? session.access_token : SUPABASE_ANON_KEY;
+            const url = `${SUPABASE_URL}/storage/v1/object/videos/${cleanFileName}`;
 
-    if (uploadError) throw uploadError;
+            const xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable && onProgress) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    onProgress(percent);
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve();
+                } else {
+                    reject(new Error(xhr.responseText || `Upload failed: ${xhr.status}`));
+                }
+            });
+
+            xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
+            
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+            xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+            xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+            xhr.setRequestHeader('x-upsert', 'true');
+            xhr.send(file);
+        } catch (e) {
+            reject(e);
+        }
+    });
 
     const { data: { publicUrl } } = supabaseClient.storage
         .from('videos')
@@ -441,16 +472,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const priceVal = priceInput && priceInput.value ? parseFloat(priceInput.value) : 0;
 
             finalUploadBtn.disabled = true;
-            finalUploadBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> UPLOADING... DO NOT CLOSE!';
+            finalUploadBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> <span id="btn-progress-text">UPLOADING... 0%</span>';
             lucide.createIcons();
-            if (statusText) {
-                statusText.style.color = '#fbbf24';
-                statusText.textContent = 'UPLOADING TO THE CLOUD... PLEASE WAIT.';
-            }
+            
+            const onProgress = (percent) => {
+                if (statusText) {
+                    statusText.style.color = '#fbbf24';
+                    statusText.innerHTML = `UPLOADING TO THE CLOUD... ${percent}%
+                        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 10px; overflow: hidden; position: relative;">
+                            <div style="width: ${percent}%; height: 100%; background: var(--accent-color); transition: width 0.2s ease-out; box-shadow: 0 0 10px var(--accent-color);"></div>
+                        </div>
+                        <span style="font-size: 0.75rem; color: #8e8e9e; font-weight: 400; margin-top: 6px; display: block;">(Large videos can take several minutes depending on your internet upload speed)</span>`;
+                }
+                const btnText = document.getElementById('btn-progress-text');
+                if (btnText) btnText.textContent = `UPLOADING... ${percent}%`;
+            };
+
+            // Initialize progress at 0
+            onProgress(0);
+            
             const id = generateID();
 
             try {
-                await uploadToCloud(id, file, titleInput.value, descInput.value, playLinkInput.value, priceVal);
+                await uploadToCloud(id, file, titleInput.value, descInput.value, playLinkInput.value, priceVal, onProgress);
                 showSuccess(id);
                 renderHistory();
                 // Reset UI
