@@ -10,19 +10,7 @@ let GAMING_LINK = localStorage.getItem('gaming_link') || '';
 let PAYSTACK_KEY = localStorage.getItem('paystack_key') || 'pk_live_4a40bfb9b3e57c0919bef6958579ae74829ce7be';
 let MNOTIFY_KEY = localStorage.getItem('mnotify_key') || '';
 let MNOTIFY_SENDER = localStorage.getItem('mnotify_sender') || 'TheFarnum';
-let IS_ADMIN = localStorage.getItem('is_admin') === 'true';
-
-// Check for Secret URL access: ?admin=true
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('admin') === 'true' || localStorage.getItem('is_admin') === 'true') {
-    IS_ADMIN = true;
-    localStorage.setItem('is_admin', 'true');
-    // We need to wait for DOM to show the link
-    document.addEventListener('DOMContentLoaded', () => {
-        const adminLink = document.getElementById('sidebar-admin-link');
-        if (adminLink) adminLink.style.display = 'flex';
-    });
-}
+let IS_ADMIN = false;
 
 // Sidebar Toggle Logic with Event Delegation (fixes Lucide DOM replacement disconnect)
 document.addEventListener('click', (e) => {
@@ -219,6 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- AUTHENTICATION MODULE ---
+    const adminEmails = ['kwekuit@gmail.com']; // <-- ADD YOUR ADMIN EMAIL HERE
+
     const authOverlay = document.getElementById('auth-overlay');
     const headerLoginBtn = document.getElementById('header-login-btn');
     const googleLoginBtn = document.getElementById('google-login-btn');
@@ -228,6 +218,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateAuthUI = (user) => {
         if (user) {
+            // Check if user is an admin by email
+            IS_ADMIN = adminEmails.map(e => e.toLowerCase()).includes(user.email?.toLowerCase());
+            
             if (headerLoginBtn) headerLoginBtn.style.display = 'none';
             if (authOverlay) authOverlay.style.display = 'none';
             if (userProfile) {
@@ -238,9 +231,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     userAvatar.style.backgroundSize = 'cover';
                 }
             }
+
+            // Show admin link if authorized
+            const adminLink = document.getElementById('sidebar-admin-link');
+            if (adminLink && IS_ADMIN) adminLink.style.display = 'flex';
+
+            // Re-render history to show/hide edit buttons based on true admin status
+            renderHistory();
         } else {
+            IS_ADMIN = false;
             if (headerLoginBtn) headerLoginBtn.style.display = 'block';
             if (userProfile) userProfile.style.display = 'none';
+            const adminLink = document.getElementById('sidebar-admin-link');
+            if (adminLink) adminLink.style.display = 'none';
+            renderHistory();
         }
     };
 
