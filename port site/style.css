@@ -324,7 +324,6 @@ header {
 
 .btn-primary:hover {
     background: #fff;
-    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 255, 204, 0.4);
 }
 
@@ -338,7 +337,6 @@ header {
 .btn-secondary:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
 }
 
 .history-section {
@@ -472,7 +470,6 @@ header {
 
 .video-card-visual:hover {
     border-color: rgba(0, 255, 204, 0.3);
-    transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 204, 0.05);
 }
 
