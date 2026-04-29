@@ -22,27 +22,27 @@ if (urlParams.get('admin') === 'true' || localStorage.getItem('is_admin') === 't
     });
 }
 
-    // Sidebar Toggle Logic with Event Delegation (fixes Lucide DOM replacement disconnect)
-    document.addEventListener('click', (e) => {
-        const toggleBtn = e.target.closest('#menu-toggle-btn');
+// Sidebar Toggle Logic with Event Delegation (fixes Lucide DOM replacement disconnect)
+document.addEventListener('click', (e) => {
+    const toggleBtn = e.target.closest('#menu-toggle-btn');
+    const sidebar = document.querySelector('.sidebar');
+
+    if (toggleBtn && sidebar) {
+        e.stopPropagation();
+        sidebar.classList.toggle('open');
+    }
+});
+
+// Main content click-to-close logic
+const mainContent = document.querySelector('.main-content');
+if (mainContent) {
+    mainContent.addEventListener('click', () => {
         const sidebar = document.querySelector('.sidebar');
-        
-        if (toggleBtn && sidebar) {
-            e.stopPropagation();
-            sidebar.classList.toggle('open');
+        if (sidebar && sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
         }
     });
-    
-    // Main content click-to-close logic
-    const mainContent = document.querySelector('.main-content');
-    if (mainContent) {
-        mainContent.addEventListener('click', () => {
-            const sidebar = document.querySelector('.sidebar');
-            if (sidebar && sidebar.classList.contains('open')) {
-                sidebar.classList.remove('open');
-            }
-        });
-    }
+}
 
 let supabaseClient = null;
 
@@ -96,7 +96,7 @@ async function fetchVideo(id) {
         .select('*')
         .eq('id', id)
         .single();
-    
+
     if (error) return null;
     return data;
 }
@@ -109,7 +109,7 @@ async function fetchRecentVideos() {
             .select('*')
             .order('created_at', { ascending: false })
             .limit(20);
-        
+
         if (error) throw error;
         return data;
     } catch (e) {
@@ -177,10 +177,10 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('paystack_key', PAYSTACK_KEY);
 
             initSupabase();
-            
+
             statusMsg.style.display = 'block';
             setTimeout(() => statusMsg.style.display = 'none', 3000);
-            
+
             renderHistory();
         };
     }
@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     if (headerLoginBtn) headerLoginBtn.onclick = () => authOverlay.style.display = 'flex';
-    
+
     if (googleLoginBtn) {
         googleLoginBtn.onclick = async () => {
             const ageCheck = document.getElementById('age-confirm-checkbox');
@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const { data, count, error } = await supabaseClient
             .from('videos')
             .select('*', { count: 'exact', head: true });
-        
+
         if (!error) {
             const statVideoEl = document.getElementById('stat-total-videos');
             if (statVideoEl) statVideoEl.textContent = count || 0;
@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderLocalHistory = () => {
         const historyList = document.getElementById('history-list');
         const historyData = JSON.parse(localStorage.getItem('academy_history') || '[]');
-        
+
         if (historyData.length === 0) {
             historyList.innerHTML = '<div style="color: var(--text-secondary); padding: 2rem;">No watch history yet. Start learning!</div>';
             return;
@@ -387,21 +387,21 @@ document.addEventListener('DOMContentLoaded', () => {
         dropZone.addEventListener('click', () => fileInput.click());
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
         dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('drag-over'); });
-        
+
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('drag-over');
             if (e.dataTransfer.files.length) stageFile(e.dataTransfer.files[0]);
         });
 
-        fileInput.addEventListener('change', (e) => { 
-            if (e.target.files.length) stageFile(e.target.files[0]); 
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) stageFile(e.target.files[0]);
         });
 
         function stageFile(file) {
             if (!file.type.startsWith('video/')) { alert('Please select a valid video file.'); return; }
             stagedFile = file;
-            
+
             // Visually update the dropzone
             const p = dropZone.querySelector('p');
             const icon = dropZone.querySelector('svg') || dropZone.querySelector('i');
@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon.replaceWith(newIcon);
                 lucide.createIcons();
             }
-            
+
             if (statusText) {
                 statusText.style.color = '#4ade80';
                 statusText.textContent = `✓ SELECTED: ${file.name}`;
@@ -429,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
         finalUploadBtn.addEventListener('click', async () => {
             if (!stagedFile) return;
             if (!supabaseClient) { alert('Please configure your Supabase first!'); return; }
-            
+
             await handleUpload(stagedFile);
         });
 
@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const playLinkInput = document.getElementById('video-play-link');
             const priceInput = document.getElementById('video-price-input');
             const priceVal = priceInput && priceInput.value ? parseFloat(priceInput.value) : 0;
-            
+
             finalUploadBtn.disabled = true;
             finalUploadBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> UPLOADING... DO NOT CLOSE!';
             lucide.createIcons();
@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 titleInput.value = '';
                 descInput.value = '';
                 stagedFile = null;
-                
+
                 const p = dropZone.querySelector('p');
                 const iconEl = dropZone.querySelector('svg') || dropZone.querySelector('i');
                 if (p) { p.textContent = 'DRAG & DROP MODULE'; p.style.color = ''; p.style.fontWeight = ''; }
@@ -467,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     iconEl.replaceWith(newIcon);
                     lucide.createIcons();
                 }
-                
+
                 if (uploadActionContainer) uploadActionContainer.style.display = 'none';
                 if (statusText) statusText.textContent = '';
             } catch (err) {
@@ -489,10 +489,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const linkElem = document.getElementById('generated-link');
             const previewBtn = document.getElementById('preview-btn');
             const link = getShareLink(id);
-            
+
             linkElem.textContent = link;
             if (previewBtn) previewBtn.href = link;
-            
+
             overlay.style.display = 'flex';
             document.getElementById('copy-btn').onclick = () => {
                 navigator.clipboard.writeText(link);
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('video-title').textContent = data.title;
                     document.getElementById('video-meta').textContent = data.description || 'Uploaded via The Farnum System';
                     document.getElementById('tg-return-btn-watch').href = TELEGRAM_GROUP_LINK;
-                    
+
                     if (document.getElementById('gaming-cta-btn')) {
                         const finalLink = data.play_link || GAMING_LINK || '#';
                         document.getElementById('gaming-cta-btn').href = finalLink;
@@ -542,7 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         payBtn.onclick = () => {
                             if (!PAYSTACK_KEY) { alert('Paystack API Key is missing. Please contact the administrator.'); return; }
-                            
+
                             const email = prompt('Enter your email to receive access to this premium module:', 'player@thefarnum.com');
                             if (!email) return;
 
@@ -552,13 +552,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                 amount: parseFloat(data.price) * 100, // Converts to lowest currency denominator
                                 currency: 'USD', // Can be NGN, GHS, ZAR, or USD depending on Paystack account
                                 ref: 'FARNUM_' + Math.floor((Math.random() * 1000000000) + 1),
-                                callback: function(response){
+                                callback: function (response) {
                                     paywallOverlay.style.display = 'none';
                                     videoElem.style.display = 'block';
                                     videoElem.src = data.video_url;
                                     videoElem.play();
                                 },
-                                onClose: function(){
+                                onClose: function () {
                                     // User closed window without paying
                                 }
                             });
@@ -679,12 +679,12 @@ async function renderHistory(filter = '') {
     if (!list) return;
 
     let videos = await fetchRecentVideos();
-    
+
     // Apply client-side filtering for search/categories
     if (filter) {
         const query = filter.toLowerCase();
-        videos = videos.filter(v => 
-            v.title?.toLowerCase().includes(query) || 
+        videos = videos.filter(v =>
+            v.title?.toLowerCase().includes(query) ||
             v.description?.toLowerCase().includes(query) ||
             (v.category && v.category.toLowerCase().includes(query))
         );
@@ -745,7 +745,7 @@ window.confirmDelete = async (id) => {
             .from('videos')
             .delete()
             .eq('id', id);
-        
+
         if (error) {
             alert('Error deleting video.');
             console.error(error);
