@@ -20,6 +20,7 @@
     
     --error: #ef4444; 
     --success: #10b981; 
+    --gold: #c5a059;
 
     /* Spacing Scale (8px system) */
     --space-1: 8px;
@@ -379,4 +380,97 @@ video { width: 100%; height: 100%; display: block; object-fit: contain; }
     .sidebar.open { transform: translateX(0); }
     
     .video-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+}
+
+/* Casino Banner Animation */
+.casino-banner {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    background: radial-gradient(circle at right, #1a2a44 0%, var(--bg-surface) 70%);
+    display: flex;
+    align-items: center;
+    padding: var(--space-6) var(--space-8);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    margin-bottom: var(--space-4);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+}
+
+.text-content { z-index: 2; }
+.text-content h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 0.5rem; text-shadow: 0 4px 20px rgba(0,0,0,0.8); }
+.text-content p { font-size: 1.2rem; color: var(--text-secondary); }
+
+.highlight {
+    color: var(--gold);
+    background: linear-gradient(to bottom, #f3e5ad, #8a6d3b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.roulette-container {
+    position: absolute;
+    right: -100px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.wheel {
+    width: 450px;
+    height: 450px;
+    border-radius: 50%;
+    border: 15px solid #222;
+    background: repeating-conic-gradient(
+      from 0deg,
+      #e01e22 0deg 18deg,
+      #111 18deg 36deg
+    );
+    animation: spin 15s linear infinite;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.8);
+    position: relative;
+}
+.wheel::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 280px;
+    height: 280px;
+    background: repeating-conic-gradient(
+      from 9deg,
+      #111 0deg 18deg,
+      #e01e22 18deg 36deg
+    );
+    border-radius: 50%;
+    border: 5px solid #c5a059;
+}
+.wheel::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, #f3e5ad, #8a6d3b);
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.shimmer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: drift 20s linear infinite;
+    z-index: 0;
+}
+
+@keyframes drift {
+    from { background-position: 0 0; }
+    to { background-position: 100px 100px; }
 }
