@@ -58,7 +58,7 @@ function initSupabase() {
 initSupabase();
 
 // --- CLOUD CORE ---
-async function uploadToCloud(id, file, title, description) {
+async function uploadToCloud(id, file, title, description, play_link, price) {
     if (!supabaseClient) {
         alert('Please configure your Supabase URL and Key first!');
         throw new Error('Supabase not configured');
@@ -82,8 +82,8 @@ async function uploadToCloud(id, file, title, description) {
             title: title || file.name,
             description: description,
             video_url: publicUrl,
-            play_link: arguments[4], // Capture the play link from arguments
-            price: arguments[5] || 0 // Capture the price from arguments
+            play_link: play_link,
+            price: price || 0
         }]);
 
     if (dbError) throw dbError;
@@ -404,21 +404,26 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Visually update the dropzone
             const p = dropZone.querySelector('p');
-            const icon = dropZone.querySelector('i');
+            const icon = dropZone.querySelector('svg') || dropZone.querySelector('i');
             if (p) {
                 p.textContent = `${file.name}`;
                 p.style.color = '#4ade80';
                 p.style.fontWeight = '700';
             }
             if (icon) {
-                icon.setAttribute('data-lucide', 'check-circle');
-                icon.style.color = '#4ade80';
+                const newIcon = document.createElement('i');
+                newIcon.setAttribute('data-lucide', 'check-circle');
+                newIcon.style.color = '#4ade80';
+                icon.replaceWith(newIcon);
                 lucide.createIcons();
             }
             
-            if (statusText) statusText.textContent = `✓ SELECTED: ${file.name}`;
+            if (statusText) {
+                statusText.style.color = '#4ade80';
+                statusText.textContent = `✓ SELECTED: ${file.name}`;
+            }
             if (uploadActionContainer) uploadActionContainer.style.display = 'block';
-            finalUploadBtn.innerText = 'PUBLISH TO THE FARNUM';
+            finalUploadBtn.innerHTML = 'PUBLISH TO THE FARNUM';
         }
 
         finalUploadBtn.addEventListener('click', async () => {
@@ -436,8 +441,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const priceVal = priceInput && priceInput.value ? parseFloat(priceInput.value) : 0;
             
             finalUploadBtn.disabled = true;
-            finalUploadBtn.innerText = 'UPLOADING... DO NOT CLOSE!';
-            if (statusText) statusText.textContent = 'UPLOADING TO THE CLOUD (DO NOT CLOSE)...';
+            finalUploadBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> UPLOADING... DO NOT CLOSE!';
+            lucide.createIcons();
+            if (statusText) {
+                statusText.style.color = '#fbbf24';
+                statusText.textContent = 'UPLOADING TO THE CLOUD... PLEASE WAIT.';
+            }
             const id = generateID();
 
             try {
@@ -450,18 +459,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 stagedFile = null;
                 
                 const p = dropZone.querySelector('p');
-                const icon = dropZone.querySelector('i');
+                const iconEl = dropZone.querySelector('svg') || dropZone.querySelector('i');
                 if (p) { p.textContent = 'DRAG & DROP MODULE'; p.style.color = ''; p.style.fontWeight = ''; }
-                if (icon) { icon.setAttribute('data-lucide', 'upload-cloud'); icon.style.color = ''; lucide.createIcons(); }
+                if (iconEl) {
+                    const newIcon = document.createElement('i');
+                    newIcon.setAttribute('data-lucide', 'upload-cloud');
+                    iconEl.replaceWith(newIcon);
+                    lucide.createIcons();
+                }
                 
                 if (uploadActionContainer) uploadActionContainer.style.display = 'none';
                 if (statusText) statusText.textContent = '';
             } catch (err) {
                 console.error(err);
-                alert('Error uploading. Make sure your bucket is public and table is created.');
+                if (statusText) {
+                    statusText.style.color = '#ef4444';
+                    statusText.textContent = 'ERROR: ' + (err.message || 'Check console & Supabase setup');
+                }
+                alert('Upload failed: ' + (err.message || 'Unknown error. Check Supabase bucket and tables.'));
             } finally {
                 finalUploadBtn.disabled = false;
-                finalUploadBtn.innerText = 'PUBLISH TO THE FARNUM';
+                finalUploadBtn.innerHTML = 'PUBLISH TO THE FARNUM';
+                lucide.createIcons();
             }
         }
 
@@ -570,7 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Watch Page Feed & Counters
         fetchRecentVideos().then(videos => {
-            const currentVideo = videos.find(v => v.id == videoId);
+            const currentVideo = videos.find(v => v.id == id);
             if (currentVideo) {
                 // Save to history
                 let history = JSON.parse(localStorage.getItem('academy_history') || '[]');

@@ -97,6 +97,7 @@
                                 <p>DRAG & DROP MODULE</p>
                                 <input type="file" id="file-input" accept="video/mp4,video/quicktime,video/webm">
                             </div>
+                            <div id="status-text" style="color: var(--accent-color); font-size: 0.9rem; font-weight: 700; margin-top: 1rem; text-align: center; min-height: 20px;"></div>
                             <input type="text" id="video-title-input" placeholder="MODULE TITLE" class="premium-input" style="margin-top: 1rem;">
                             <input type="text" id="video-play-link" placeholder="PLAY LINK (Optional)" class="premium-input" style="margin-top: 0.5rem;">
                             <input type="number" id="video-price-input" placeholder="PRICE ($) - Leave blank for Free" class="premium-input" style="margin-top: 0.5rem;" min="0" step="0.01">
@@ -141,7 +142,6 @@
                         <div class="filter-chip" onclick="setFilter('Monetization', this)">Monetization</div>
                         <div class="filter-chip" onclick="setFilter('Strategy', this)">Strategy</div>
                         <div class="filter-chip" onclick="setFilter('Tutorials', this)">Tutorials</div>
-                    </div>
                     </div>
                     <div id="video-list"></div>
                 </div>
@@ -241,12 +241,6 @@
     </div>
 
     <!-- Modals -->
-    <div class="overlay" id="overlay">...</div>
-    <div class="overlay" id="edit-overlay">...</div>
-
-    <script src="app.js"></script>
-    <script>lucide.createIcons();</script>
-
     <!-- Upload Success Overlay -->
     <div class="overlay" id="overlay">
         <div class="result-card">
