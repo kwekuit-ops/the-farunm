@@ -8,6 +8,8 @@ let SUPABASE_ANON_KEY = localStorage.getItem('sb_key') || 'sb_publishable_yle17i
 let TELEGRAM_GROUP_LINK = localStorage.getItem('tg_link') || '';
 let GAMING_LINK = localStorage.getItem('gaming_link') || '';
 let PAYSTACK_KEY = localStorage.getItem('paystack_key') || 'pk_live_4a40bfb9b3e57c0919bef6958579ae74829ce7be';
+let MNOTIFY_KEY = localStorage.getItem('mnotify_key') || '';
+let MNOTIFY_SENDER = localStorage.getItem('mnotify_sender') || 'TheFarnum';
 let IS_ADMIN = localStorage.getItem('is_admin') === 'true';
 
 // Check for Secret URL access: ?admin=true
@@ -254,8 +256,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!supabaseClient) { alert('System Offline: Connect Supabase first.'); return; }
             const { data, error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
+                options: {
+                    redirectTo: window.location.origin
+                }
             });
-            if (error) console.error('Auth Error:', error.message);
+            if (error) {
+                alert('Auth Error: ' + error.message);
+                console.error('Auth Error:', error.message);
+            }
         };
     }
 
@@ -270,8 +278,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Listen for Auth State Changes
     if (supabaseClient) {
-        supabaseClient.auth.onAuthStateChange((event, session) => {
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
             updateAuthUI(session?.user);
+
+            // Show phone collection modal on first-ever sign in
+            if (event === 'SIGNED_IN' && session?.user) {
+                const userId = session.user.id;
+                const alreadyAsked = localStorage.getItem(`phone_collected_${userId}`);
+                if (!alreadyAsked) {
+                    setTimeout(() => {
+                        const modal = document.getElementById('phone-collect-overlay');
+                        if (modal) {
+                            modal.style.display = 'flex';
+                            lucide.createIcons();
+                        }
+                    }, 1500); // slight delay so login feels smooth
+                }
+            }
         });
 
         // Check current session on load
@@ -854,3 +877,324 @@ window.confirmDelete = async (id) => {
         }
     }
 };
+
+// ============================================================
+// NOTIFICATION SYSTEM
+// ============================================================
+
+function renderNotifications() {
+    const list = document.getElementById('notif-list');
+    const badge = document.getElementById('notif-badge');
+    if (!list) return;
+
+    const notifications = JSON.parse(localStorage.getItem('farnum_notifications') || '[]');
+
+    if (notifications.length === 0) {
+        list.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--text-secondary); font-size: 0.875rem;">
+            <i data-lucide="bell-off" style="width: 32px; height: 32px; margin-bottom: 0.5rem; display: block; margin-left: auto; margin-right: auto;"></i>
+            No notifications yet
+        </div>`;
+        if (badge) badge.style.display = 'none';
+        lucide.createIcons();
+        return;
+    }
+
+    const unread = notifications.filter(n => !n.read).length;
+    if (badge) badge.style.display = unread > 0 ? 'block' : 'none';
+
+    list.innerHTML = notifications.slice().reverse().map(n => `
+        <div style="padding: 0.9rem 1.2rem; border-bottom: 1px solid var(--border-color); display: flex; gap: 0.8rem; align-items: flex-start; ${!n.read ? 'background: rgba(99,102,241,0.04);' : ''}">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${!n.read ? 'var(--primary)' : 'transparent'}; border: 2px solid ${!n.read ? 'var(--primary)' : 'var(--border-highlight)'}; flex-shrink: 0; margin-top: 5px;"></div>
+            <div style="flex: 1;">
+                <div style="font-size: 0.875rem; font-weight: 500; color: var(--text-primary); margin-bottom: 2px;">${n.title}</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">${n.message}</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">${n.time}</div>
+            </div>
+        </div>
+    `).join('');
+
+    // Mark all as read after opening
+    const updated = notifications.map(n => ({ ...n, read: true }));
+    localStorage.setItem('farnum_notifications', JSON.stringify(updated));
+    if (badge) badge.style.display = 'none';
+}
+
+function clearNotifications() {
+    localStorage.removeItem('farnum_notifications');
+    renderNotifications();
+}
+
+// Admin helper: call this from browser console to push a notification to all users
+// Example: pushNotification("New Video!", "Check out our latest casino strategy module.")
+window.pushNotification = function(title, message) {
+    const notifications = JSON.parse(localStorage.getItem('farnum_notifications') || '[]');
+    notifications.push({
+        id: Date.now(),
+        title,
+        message,
+        read: false,
+        time: new Date().toLocaleString()
+    });
+    localStorage.setItem('farnum_notifications', JSON.stringify(notifications));
+    const badge = document.getElementById('notif-badge');
+    if (badge) badge.style.display = 'block';
+    alert(`Notification pushed: "${title}"`);
+};
+
+// Wire up bell button
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('notif-btn');
+    const panel = document.getElementById('notif-panel');
+
+    // Show red dot if there are unread notifications on load
+    const stored = JSON.parse(localStorage.getItem('farnum_notifications') || '[]');
+    const unread = stored.filter(n => !n.read).length;
+    const badge = document.getElementById('notif-badge');
+    if (badge && unread > 0) badge.style.display = 'block';
+
+    if (btn && panel) {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = panel.style.display === 'block';
+            panel.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) renderNotifications();
+        });
+
+        // Close panel when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('notif-wrapper')?.contains(e.target)) {
+                panel.style.display = 'none';
+            }
+        });
+    }
+});
+
+// ============================================================
+// CONFIG SAVE / LOAD (Admin Console)
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Populate saved config into input fields
+    const fields = {
+        'sb-url-input': localStorage.getItem('sb_url') || '',
+        'sb-key-input': localStorage.getItem('sb_key') || '',
+        'paystack-key-input': localStorage.getItem('paystack_key') || '',
+        'mnotify-key-input': localStorage.getItem('mnotify_key') || '',
+        'mnotify-sender-input': localStorage.getItem('mnotify_sender') || 'TheFarnum',
+    };
+    Object.entries(fields).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+    });
+
+    const saveBtn = document.getElementById('save-config-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const sbUrl = document.getElementById('sb-url-input')?.value.trim();
+            const sbKey = document.getElementById('sb-key-input')?.value.trim();
+            const paystackKey = document.getElementById('paystack-key-input')?.value.trim();
+            const mnotifyKey = document.getElementById('mnotify-key-input')?.value.trim();
+            const mnotifySender = document.getElementById('mnotify-sender-input')?.value.trim();
+
+            if (sbUrl) { localStorage.setItem('sb_url', sbUrl); SUPABASE_URL = sbUrl; }
+            if (sbKey) { localStorage.setItem('sb_key', sbKey); SUPABASE_ANON_KEY = sbKey; }
+            if (paystackKey) { localStorage.setItem('paystack_key', paystackKey); PAYSTACK_KEY = paystackKey; }
+            if (mnotifyKey) { localStorage.setItem('mnotify_key', mnotifyKey); MNOTIFY_KEY = mnotifyKey; }
+            if (mnotifySender) { localStorage.setItem('mnotify_sender', mnotifySender); MNOTIFY_SENDER = mnotifySender; }
+
+            saveBtn.textContent = '✓ SAVED!';
+            saveBtn.style.background = 'var(--success)';
+            setTimeout(() => { saveBtn.textContent = 'SAVE ENVIRONMENT'; saveBtn.style.background = ''; }, 2000);
+        });
+    }
+
+    // SMS character counter
+    const msgInput = document.getElementById('sms-message-input');
+    const charCount = document.getElementById('sms-char-count');
+    if (msgInput && charCount) {
+        msgInput.addEventListener('input', () => {
+            const len = msgInput.value.length;
+            charCount.textContent = `${len} / 160`;
+            charCount.style.color = len > 160 ? '#ef4444' : 'var(--text-muted)';
+        });
+    }
+
+    // Recipient counter
+    const recipInput = document.getElementById('sms-recipients-input');
+    const recipCount = document.getElementById('recipient-count');
+    if (recipInput && recipCount) {
+        recipInput.addEventListener('input', () => {
+            const nums = recipInput.value.split('\n').map(n => n.trim()).filter(n => n.length > 6);
+            recipCount.textContent = `(${nums.length} numbers)`;
+        });
+    }
+
+    // Send SMS button
+    const sendBtn = document.getElementById('send-sms-btn');
+    if (sendBtn) {
+        sendBtn.addEventListener('click', sendSmsBroadcast);
+    }
+});
+
+// ============================================================
+// MNOTIFY SMS BROADCAST
+// ============================================================
+
+async function sendSmsBroadcast() {
+    const btn = document.getElementById('send-sms-btn');
+    const statusEl = document.getElementById('sms-status');
+    const message = document.getElementById('sms-message-input')?.value.trim();
+    const recipientsRaw = document.getElementById('sms-recipients-input')?.value || '';
+
+    if (!MNOTIFY_KEY) {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = '✗ mNotify API Key not set. Save it in the config above first.';
+        return;
+    }
+    if (!message) {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = '✗ Please type a message before sending.';
+        return;
+    }
+
+    const recipients = recipientsRaw.split('\n')
+        .map(n => n.trim().replace(/\s/g, ''))
+        .filter(n => n.length >= 9);
+
+    if (recipients.length === 0) {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = '✗ No valid phone numbers found.';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" class="spin"></i> Sending...';
+    lucide.createIcons();
+    statusEl.style.color = '#fbbf24';
+    statusEl.textContent = `Sending to ${recipients.length} recipient(s)...`;
+
+    let sent = 0, failed = 0;
+
+    for (const number of recipients) {
+        try {
+            // mNotify API — sends one SMS at a time
+            const url = `https://apps.mnotify.net/smsapi?key=${encodeURIComponent(MNOTIFY_KEY)}&to=${encodeURIComponent(number)}&msg=${encodeURIComponent(message)}&sender_id=${encodeURIComponent(MNOTIFY_SENDER || 'TheFarnum')}`;
+            const res = await fetch(url);
+            const text = await res.text();
+            // mNotify returns "1000" or similar code on success
+            if (res.ok && (text.includes('1000') || text.includes('success'))) {
+                sent++;
+            } else {
+                failed++;
+                console.warn(`Failed for ${number}:`, text);
+            }
+        } catch (e) {
+            failed++;
+            console.warn(`Error for ${number}:`, e);
+        }
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="send"></i> Send SMS Blast';
+    lucide.createIcons();
+
+    if (failed === 0) {
+        statusEl.style.color = '#10b981';
+        statusEl.textContent = `✓ Successfully sent to all ${sent} recipient(s)!`;
+    } else {
+        statusEl.style.color = '#fbbf24';
+        statusEl.textContent = `Sent: ${sent} ✓  |  Failed: ${failed} ✗  (Check console for details)`;
+    }
+}
+
+// Load phone numbers from Supabase subscribers table (if it exists)
+window.loadSubscriberNumbers = async function() {
+    if (!supabaseClient) {
+        alert('Supabase not connected.');
+        return;
+    }
+    const { data, error } = await supabaseClient
+        .from('subscribers')
+        .select('phone');
+
+    if (error) {
+        alert('Could not load subscribers. Make sure a "subscribers" table with a "phone" column exists in Supabase.');
+        return;
+    }
+
+    const numbers = data.map(r => r.phone).filter(Boolean);
+    const input = document.getElementById('sms-recipients-input');
+    const count = document.getElementById('recipient-count');
+    if (input) input.value = numbers.join('\n');
+    if (count) count.textContent = `(${numbers.length} numbers)`;
+};
+
+// ============================================================
+// PHONE COLLECTION MODAL HANDLERS
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const savePhoneBtn = document.getElementById('save-phone-btn');
+    const skipPhoneBtn = document.getElementById('skip-phone-btn');
+    const modal = document.getElementById('phone-collect-overlay');
+
+    const dismissModal = (userId) => {
+        if (modal) modal.style.display = 'none';
+        if (userId) localStorage.setItem(`phone_collected_${userId}`, 'true');
+    };
+
+    if (savePhoneBtn) {
+        savePhoneBtn.addEventListener('click', async () => {
+            const countryCode = document.getElementById('phone-country-code')?.value || '233';
+            const rawNumber = document.getElementById('phone-number-input')?.value.trim().replace(/\s/g, '');
+
+            if (!rawNumber || rawNumber.length < 7) {
+                document.getElementById('phone-number-input').style.borderColor = '#ef4444';
+                return;
+            }
+
+            // Build full international number
+            let fullNumber = rawNumber.replace(/^0/, ''); // remove leading 0
+            fullNumber = countryCode + fullNumber;
+
+            savePhoneBtn.disabled = true;
+            savePhoneBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> Saving...';
+            lucide.createIcons();
+
+            try {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+
+                // Save to Supabase subscribers table
+                const { error } = await supabaseClient
+                    .from('subscribers')
+                    .upsert({
+                        user_id: user?.id || null,
+                        email: user?.email || null,
+                        name: user?.user_metadata?.full_name || null,
+                        phone: fullNumber,
+                        created_at: new Date().toISOString()
+                    }, { onConflict: 'user_id' });
+
+                if (error) throw error;
+
+                savePhoneBtn.innerHTML = '<i data-lucide="check"></i> Saved!';
+                savePhoneBtn.style.background = 'var(--success)';
+                lucide.createIcons();
+                setTimeout(() => dismissModal(user?.id), 1200);
+
+            } catch (err) {
+                console.error('Phone save error:', err);
+                savePhoneBtn.disabled = false;
+                savePhoneBtn.innerHTML = '<i data-lucide="check"></i> Save & Continue';
+                // Still dismiss — don't block user
+                const { data: { user } } = await supabaseClient.auth.getUser().catch(() => ({ data: {} }));
+                dismissModal(user?.id);
+            }
+        });
+    }
+
+    if (skipPhoneBtn) {
+        skipPhoneBtn.addEventListener('click', async () => {
+            const { data: { user } } = await supabaseClient.auth.getUser().catch(() => ({ data: {} }));
+            dismissModal(user?.id);
+        });
+    }
+});
