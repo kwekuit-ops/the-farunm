@@ -21,6 +21,46 @@ document.addEventListener('click', (e) => {
         e.stopPropagation();
         sidebar.classList.toggle('open');
     }
+
+    // Close Sidebar logic
+    const closeBtn = e.target.closest('#close-sidebar-btn');
+    if (closeBtn && sidebar) {
+        sidebar.classList.remove('open');
+    }
+});
+
+// Search Functionality
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.search-btn')) {
+        const input = document.querySelector('.search-bar input');
+        const query = input ? input.value.trim() : '';
+        executeSearch(query);
+    }
+});
+
+document.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && e.target.matches('.search-bar input')) {
+        executeSearch(e.target.value.trim());
+    }
+});
+
+function executeSearch(query) {
+    if (window.location.pathname.includes('watch.html')) {
+        window.location.href = `index.html?search=${encodeURIComponent(query)}`;
+    } else {
+        renderHistory(query);
+    }
+}
+
+// Check for search query on load (from redirect)
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const searchQuery = params.get('search');
+    if (searchQuery && !window.location.pathname.includes('watch.html')) {
+        const input = document.querySelector('.search-bar input');
+        if (input) input.value = searchQuery;
+        renderHistory(searchQuery);
+    }
 });
 
 // Main content click-to-close logic
@@ -48,20 +88,29 @@ function initSupabase() {
 initSupabase();
 
 // --- CLOUD CORE ---
-async function uploadToCloud(id, file, title, description, play_link, price, onProgress) {
+async function uploadToCloud(id, videoFile, thumbFile, title, description, play_link, price, onProgress) {
     if (!supabaseClient) {
         alert('Please configure your Supabase URL and Key first!');
         throw new Error('Supabase not configured');
     }
 
-    const cleanFileName = `${id}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-    
-    // Use XMLHttpRequest directly to track upload progress
+    const cleanVideoName = `${id}-video-${videoFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    let thumbUrl = null;
+
+    // 1. Upload Thumbnail if exists
+    if (thumbFile) {
+        const cleanThumbName = `${id}-thumb-${thumbFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+        await supabaseClient.storage.from('videos').upload(cleanThumbName, thumbFile);
+        const { data: { publicUrl } } = supabaseClient.storage.from('videos').getPublicUrl(cleanThumbName);
+        thumbUrl = publicUrl;
+    }
+
+    // 2. Upload Video (with progress)
     await new Promise(async (resolve, reject) => {
         try {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const token = session ? session.access_token : SUPABASE_ANON_KEY;
-            const url = `${SUPABASE_URL}/storage/v1/object/videos/${cleanFileName}`;
+            const url = `${SUPABASE_URL}/storage/v1/object/videos/${cleanVideoName}`;
 
             const xhr = new XMLHttpRequest();
             xhr.upload.addEventListener('progress', (e) => {
@@ -72,37 +121,35 @@ async function uploadToCloud(id, file, title, description, play_link, price, onP
             });
 
             xhr.addEventListener('load', () => {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    resolve();
-                } else {
-                    reject(new Error(xhr.responseText || `Upload failed: ${xhr.status}`));
-                }
+                if (xhr.status >= 200 && xhr.status < 300) resolve();
+                else reject(new Error(xhr.responseText || `Upload failed: ${xhr.status}`));
             });
 
             xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
-            
             xhr.open('POST', url, true);
             xhr.setRequestHeader('Authorization', `Bearer ${token}`);
             xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
-            xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+            xhr.setRequestHeader('Content-Type', videoFile.type || 'application/octet-stream');
             xhr.setRequestHeader('x-upsert', 'true');
-            xhr.send(file);
+            xhr.send(videoFile);
         } catch (e) {
             reject(e);
         }
     });
 
-    const { data: { publicUrl } } = supabaseClient.storage
+    const { data: { publicUrl: videoUrl } } = supabaseClient.storage
         .from('videos')
-        .getPublicUrl(cleanFileName);
+        .getPublicUrl(cleanVideoName);
 
+    // 3. Insert into Database
     const { error: dbError } = await supabaseClient
         .from('videos')
         .insert([{
             id,
-            title: title || file.name,
+            title: title || videoFile.name,
             description: description,
-            video_url: publicUrl,
+            video_url: videoUrl,
+            thumbnail_url: thumbUrl,
             play_link: play_link,
             price: price || 0
         }]);
@@ -220,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             // Check if user is an admin by email
             IS_ADMIN = adminEmails.map(e => e.toLowerCase()).includes(user.email?.toLowerCase());
-            
+
             if (headerLoginBtn) headerLoginBtn.style.display = 'none';
             if (authOverlay) authOverlay.style.display = 'none';
             if (userProfile) {
@@ -232,9 +279,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Show admin link if authorized
+            // Show admin link and panels if authorized
             const adminLink = document.getElementById('sidebar-admin-link');
+            const smsPanel = document.getElementById('sms-broadcast-panel');
             if (adminLink && IS_ADMIN) adminLink.style.display = 'flex';
+            if (smsPanel && IS_ADMIN) smsPanel.style.display = 'block';
+
+            // Hide Auth CTA section if logged in
+            const authCta = document.getElementById('auth-cta-section');
+            if (authCta) authCta.style.display = 'none';
 
             // Re-render history to show/hide edit buttons based on true admin status
             renderHistory();
@@ -243,7 +296,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (headerLoginBtn) headerLoginBtn.style.display = 'block';
             if (userProfile) userProfile.style.display = 'none';
             const adminLink = document.getElementById('sidebar-admin-link');
+            const smsPanel = document.getElementById('sms-broadcast-panel');
+            const authCta = document.getElementById('auth-cta-section');
             if (adminLink) adminLink.style.display = 'none';
+            if (smsPanel) smsPanel.style.display = 'none';
+            if (authCta) authCta.style.display = 'block';
             renderHistory();
         }
     };
@@ -543,7 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
             finalUploadBtn.disabled = true;
             finalUploadBtn.innerHTML = '<i data-lucide="loader" class="spin"></i> <span id="btn-progress-text">UPLOADING... 0%</span>';
             lucide.createIcons();
-            
+
             const onProgress = (percent) => {
                 if (statusText) {
                     statusText.style.color = '#fbbf24';
@@ -559,16 +616,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Initialize progress at 0
             onProgress(0);
-            
+
             const id = generateID();
 
             try {
-                await uploadToCloud(id, file, titleInput.value, descInput.value, playLinkInput.value, priceVal, onProgress);
+                const thumbInput = document.getElementById('thumbnail-input');
+                const thumbFile = thumbInput?.files[0] || null;
+
+                await uploadToCloud(id, file, thumbFile, titleInput.value, descInput.value, playLinkInput.value, priceVal, onProgress);
                 showSuccess(id);
                 renderHistory();
                 // Reset UI
                 titleInput.value = '';
                 descInput.value = '';
+                if (thumbInput) thumbInput.value = '';
                 stagedFile = null;
 
                 const p = dropZone.querySelector('p');
@@ -640,6 +701,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('video-title').textContent = data.title;
                     document.getElementById('video-meta').textContent = data.description || 'Uploaded via The Farnum System';
                     document.getElementById('tg-return-btn-watch').href = TELEGRAM_GROUP_LINK;
+
+                    // Update the description box with the Play Link
+                    const descBox = document.getElementById('desc-box');
+                    if (descBox) {
+                        const playUrl = data.play_link || GAMING_LINK || '#';
+                        descBox.innerHTML = `
+                            <a href="${playUrl}" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 0.8rem; background: var(--primary); color: #fff; padding: 1rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 1rem; transition: transform 0.2s; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                                <i data-lucide="play-circle" style="width: 20px; height: 20px;"></i>
+                                CLICK HERE TO PLAY THIS GAME
+                            </a>
+                        `;
+                    }
 
                     if (document.getElementById('gaming-cta-btn')) {
                         const finalLink = data.play_link || GAMING_LINK || '#';
@@ -805,6 +878,12 @@ async function renderHistory(filter = '') {
     const list = document.getElementById('video-list');
     if (!list) return;
 
+    // Use search bar input if no filter is explicitly provided
+    if (!filter) {
+        const input = document.querySelector('.search-bar input');
+        filter = input ? input.value.trim() : '';
+    }
+
     let videos = await fetchRecentVideos();
 
     // Apply client-side filtering for search/categories
@@ -828,7 +907,7 @@ async function renderHistory(filter = '') {
         return `
             <div class="video-card-visual" style="animation: entrance 0.4s ease-out backwards; animation-delay: ${delay}s" onclick="window.location.href='${link}'">
                 <div class="video-preview-box">
-                    <video src="${v.video_url}" preload="metadata" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>
+                    <video src="${v.video_url}" poster="${v.thumbnail_url || ''}" preload="metadata" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>
                     <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #fff; padding: 2px 4px; border-radius: 4px; font-size: 0.75rem; font-weight: 500;"> ${Math.floor(Math.random() * 10 + 5)}:12 </div>
                     ${v.price > 0 ? `<div style="position: absolute; top: 8px; right: 8px; background: var(--accent-secondary); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.3rem; box-shadow: 0 0 10px rgba(112,0,255,0.4);"><i data-lucide="lock" style="width: 10px; height: 10px;"></i> $${v.price}</div>` : `<div style="position: absolute; top: 8px; right: 8px; background: var(--accent-color); color: #000; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.3rem;"><i data-lucide="unlock" style="width: 10px; height: 10px;"></i> FREE</div>`}
                 </div>
@@ -930,7 +1009,7 @@ function clearNotifications() {
 
 // Admin helper: call this from browser console to push a notification to all users
 // Example: pushNotification("New Video!", "Check out our latest casino strategy module.")
-window.pushNotification = function(title, message) {
+window.pushNotification = function (title, message) {
     const notifications = JSON.parse(localStorage.getItem('farnum_notifications') || '[]');
     notifications.push({
         id: Date.now(),
@@ -1111,7 +1190,7 @@ async function sendSmsBroadcast() {
 }
 
 // Load phone numbers from Supabase subscribers table (if it exists)
-window.loadSubscriberNumbers = async function() {
+window.loadSubscriberNumbers = async function () {
     if (!supabaseClient) {
         alert('Supabase not connected.');
         return;
